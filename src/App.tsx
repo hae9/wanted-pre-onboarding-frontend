@@ -1,9 +1,11 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Outlet } from 'react-router';
 
 function App() {
-  return <div className="App"></div>;
+  return (
+    <div className="w-screen h-screen flex items-center justify-center">
+      <Outlet />
+    </div>
+  );
 }
 
 export default App;
