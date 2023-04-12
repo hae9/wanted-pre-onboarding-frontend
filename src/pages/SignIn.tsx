@@ -57,7 +57,7 @@ const SignIn = () => {
 
         <button
           type="submit"
-          data-testid="signup-button"
+          data-testid="signin-button"
           className={`mt-5 py-2 ${isValid ? 'bg-blue' : 'bg-gray '} rounded-full text-white flex justify-center font-semibold`}
           disabled={!isValid}
         >
