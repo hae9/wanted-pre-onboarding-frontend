@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { createTodo, getTodos, updateTodo } from '../api/todoApi';
+import { createTodo, deleteTodo, getTodos, updateTodo } from '../api/todoApi';
 
 const TodoList = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -16,7 +16,7 @@ const TodoList = () => {
   };
   const checkTodo = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
-    const id = parseInt(event.target.value);
+    const id = Number(event.target.value);
     const todo = event.currentTarget.dataset.todo || '';
     updateTodo({ id, isCompleted: checked, todo }).then((res) => {
       const updatedTodos = todos.map((todo) => {
@@ -44,14 +44,33 @@ const TodoList = () => {
           추가
         </button>
       </form>
-      <ul className="w-full">
+      <ul className="w-full px-5">
         {todos.length
           ? todos.map((todo) => (
-              <li key={todo.id} className="w-full flex">
-                <label className="w-1/2 flex gap-5">
+              <li key={todo.id} className="w-full flex mb-2 justify-between">
+                <label className="w-3/5 flex gap-5">
                   <input type="checkbox" onChange={checkTodo} value={todo.id} checked={todo.isCompleted} data-todo={todo.todo} />
                   <span>{todo.todo}</span>
                 </label>
+                <div className="flex gap-4 text-white text-xs">
+                  <button data-testid="modify-button" className="bg-yellow rounded-xl px-2">
+                    수정
+                  </button>
+                  <button
+                    data-testid="delete-button"
+                    className="bg-gray rounded-xl px-2"
+                    onClick={(e) =>
+                      deleteTodo(todo.id).then((res) => {
+                        if (res.status === 204) {
+                          const updatedTodos = todos.filter((origin) => origin.id !== Number(todo.id));
+                          setTodos(updatedTodos);
+                        }
+                      })
+                    }
+                  >
+                    삭제
+                  </button>
+                </div>
               </li>
             ))
           : '리스트가 없습니다.'}

@@ -27,5 +27,5 @@ export const updateTodo = async ({ id, todo, isCompleted }: updateTodoData) => {
 // todo 삭제
 export const deleteTodo = async (id: number) => {
   const res = await authInstance.delete(`/todos/${id}`);
-  return res.data;
+  return res;
 };
