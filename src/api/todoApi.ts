@@ -5,6 +5,7 @@ export const createTodo = async (todo: string) => {
   const res = await authInstance.post(`/todos`, {
     todo,
   });
+  console.log(todo);
   return res.data;
 };
 
