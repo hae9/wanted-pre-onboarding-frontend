@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { createTodo, getTodos } from '../api/todoApi';
+import { createTodo, getTodos, updateTodo } from '../api/todoApi';
 
 const TodoList = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -8,13 +8,26 @@ const TodoList = () => {
   useEffect(() => {
     getTodos().then((res) => setTodos(res));
   }, []);
-
+  console.log(todos);
   const onSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     createTodo(todoInput).then((res) => setTodos([...todos, res]));
     setTodoInput('');
   };
-  console.log(todos);
+  const checkTodo = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = event.target;
+    const id = parseInt(event.target.value);
+    const todo = event.currentTarget.dataset.todo || '';
+    updateTodo({ id, isCompleted: checked, todo }).then((res) => {
+      const updatedTodos = todos.map((todo) => {
+        if (todo.id === res.id) {
+          return res;
+        }
+        return todo;
+      });
+      setTodos(updatedTodos);
+    });
+  };
   return (
     <div className="flex flex-col w-[30rem] items-center gap-10 border-2 border-gray border-opacity-50 p-10 rounded-lg">
       <h2 className="text-blue font-bold text-[1.8rem]">Todo List</h2>
@@ -31,12 +44,12 @@ const TodoList = () => {
           추가
         </button>
       </form>
-      <ul>
+      <ul className="w-full">
         {todos.length
           ? todos.map((todo) => (
-              <li key={todo.id}>
-                <label>
-                  <input type="checkbox" checked={todo.isCompleted} />
+              <li key={todo.id} className="w-full flex">
+                <label className="w-1/2 flex gap-5">
+                  <input type="checkbox" onChange={checkTodo} value={todo.id} checked={todo.isCompleted} data-todo={todo.todo} />
                   <span>{todo.todo}</span>
                 </label>
               </li>
