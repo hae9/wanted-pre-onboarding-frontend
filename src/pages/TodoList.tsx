@@ -4,16 +4,18 @@ import { createTodo, deleteTodo, getTodos, updateTodo } from '../api/todoApi';
 const TodoList = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [todoInput, setTodoInput] = useState('');
+  const [editing, setEditing] = useState<updateTodoData | null>(null);
 
   useEffect(() => {
     getTodos().then((res) => setTodos(res));
   }, []);
-  console.log(todos);
+
   const onSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     createTodo(todoInput).then((res) => setTodos([...todos, res]));
     setTodoInput('');
   };
+
   const checkTodo = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
     const id = Number(event.target.value);
@@ -28,6 +30,7 @@ const TodoList = () => {
       setTodos(updatedTodos);
     });
   };
+
   return (
     <div className="flex flex-col w-[30rem] items-center gap-10 border-2 border-gray border-opacity-50 p-10 rounded-lg">
       <h2 className="text-blue font-bold text-[1.8rem]">Todo List</h2>
@@ -48,29 +51,78 @@ const TodoList = () => {
         {todos.length
           ? todos.map((todo) => (
               <li key={todo.id} className="w-full flex mb-2 justify-between">
-                <label className="w-3/5 flex gap-5">
-                  <input type="checkbox" onChange={checkTodo} value={todo.id} checked={todo.isCompleted} data-todo={todo.todo} />
-                  <span>{todo.todo}</span>
-                </label>
-                <div className="flex gap-4 text-white text-xs">
-                  <button data-testid="modify-button" className="bg-yellow rounded-xl px-2">
-                    수정
-                  </button>
-                  <button
-                    data-testid="delete-button"
-                    className="bg-gray rounded-xl px-2"
-                    onClick={(e) =>
-                      deleteTodo(todo.id).then((res) => {
-                        if (res.status === 204) {
-                          const updatedTodos = todos.filter((origin) => origin.id !== Number(todo.id));
-                          setTodos(updatedTodos);
+                {editing?.id === todo.id ? (
+                  <>
+                    <label className="w-3/5 flex gap-5">
+                      <input
+                        type="checkbox"
+                        onChange={(e) => setEditing({ ...editing, isCompleted: e.target.checked })}
+                        value={todo.id}
+                        checked={editing.isCompleted}
+                      />
+                      <input
+                        type="text"
+                        data-testid="modify-input"
+                        className="border border-green border-opacity-80 w-3/4 rounded px-2"
+                        value={editing.todo}
+                        onChange={(e) => setEditing({ ...editing, todo: e.target.value })}
+                      />
+                    </label>
+                    <div className="flex gap-4 text-white text-xs">
+                      <button
+                        data-testid="submit-button"
+                        className="bg-green rounded-xl px-2"
+                        onClick={() =>
+                          updateTodo(editing).then((res) => {
+                            const updatedTodos = todos.map((todo) => {
+                              if (todo.id === res.id) {
+                                return res;
+                              }
+                              return todo;
+                            });
+                            setTodos(updatedTodos);
+                            setEditing(null);
+                          })
                         }
-                      })
-                    }
-                  >
-                    삭제
-                  </button>
-                </div>
+                      >
+                        제출
+                      </button>
+                      <button data-testid="cancel-button" className="bg-gray rounded-xl px-2" onClick={() => setEditing(null)}>
+                        취소
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <label className="w-3/5 flex gap-5">
+                      <input type="checkbox" onChange={checkTodo} value={todo.id} checked={todo.isCompleted} data-todo={todo.todo} />
+                      <span>{todo.todo}</span>
+                    </label>
+                    <div className="flex gap-4 text-white text-xs">
+                      <button
+                        data-testid="modify-button"
+                        className="bg-yellow rounded-xl px-2"
+                        onClick={(e) => setEditing({ id: todo.id, todo: todo.todo, isCompleted: todo.isCompleted })}
+                      >
+                        수정
+                      </button>
+                      <button
+                        data-testid="delete-button"
+                        className="bg-gray rounded-xl px-2"
+                        onClick={(e) =>
+                          deleteTodo(todo.id).then((res) => {
+                            if (res.status === 204) {
+                              const updatedTodos = todos.filter((origin) => origin.id !== Number(todo.id));
+                              setTodos(updatedTodos);
+                            }
+                          })
+                        }
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))
           : '리스트가 없습니다.'}
